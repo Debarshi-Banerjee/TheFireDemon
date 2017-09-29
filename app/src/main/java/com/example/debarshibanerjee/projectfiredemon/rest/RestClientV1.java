@@ -35,9 +35,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class RestClientV1 {
-    public static final String BASE_URL = "http://192.168.1.56:9998/";
+    public static final String BASE_URL = "https://api.github.com";
 
-    public static final String API_PREFIX = "api/v1/";
+    public static final String API_PREFIX = "";
 
     public static final String IMAGES_PREFIX = "images/";
     public static final String IMAGES_URL = BASE_URL + IMAGES_PREFIX;
@@ -138,7 +138,6 @@ public class RestClientV1 {
                 .create();
 
 
-
         OkHttpClient okHttpClient = okHttpBuilder.build();
         String endpoint = BASE_URL + API_PREFIX;
 
@@ -146,7 +145,7 @@ public class RestClientV1 {
         retrofitBuilder.baseUrl(endpoint);
         retrofitBuilder.client(okHttpClient);
         retrofitBuilder.addConverterFactory(GsonConverterFactory.create(gson));
-        Retrofit retrofit=retrofitBuilder.build();
+        Retrofit retrofit = retrofitBuilder.build();
 
         mApiService = retrofit.create(ApiServiceV1.class);
     }
@@ -158,5 +157,8 @@ public class RestClientV1 {
         return sInstance;
     }
 
+    public void getGitHubRepoContributors(String owner, String repo) {
+        mApiService.repoContributors(owner, repo).enqueue();
+    }
 
 }
