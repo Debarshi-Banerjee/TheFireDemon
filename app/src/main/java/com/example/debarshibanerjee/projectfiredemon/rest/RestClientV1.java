@@ -1,11 +1,17 @@
 package com.example.debarshibanerjee.projectfiredemon.rest;
 
-import android.util.JsonReader;
-import android.util.JsonToken;
-import android.util.JsonWriter;
 
 import com.example.debarshibanerjee.projectfiredemon.App;
 import com.example.debarshibanerjee.projectfiredemon.Constants;
+import com.example.debarshibanerjee.projectfiredemon.helpers.Utility;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.raizlabs.android.dbflow.structure.ModelAdapter;
 
 import java.io.File;
@@ -15,7 +21,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Cache;
+import okhttp3.Dispatcher;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by debarshibanerjee on 28/09/17.
@@ -34,12 +47,7 @@ public class RestClientV1 {
 
     public static final int ERROR_UNKNOWN = -1;
 
-    public static final int ERROR_VERSION_MISMATCH = 666;
-    public static final int ERROR_PHONE_ALREADY_EXISTS = 677;
-    public static final int ERROR_CODE_MEETUP_OVER = 440;
-
     public static final String ERROR_MEETUP_STATUS = "status";
-
 
 
     private static final TypeAdapter<Boolean> booleanAsIntAdapter = new TypeAdapter<Boolean>() {
@@ -79,24 +87,28 @@ public class RestClientV1 {
         File cacheDir = App.getAppContext().getCacheDir();
         Cache cache = new Cache(cacheDir, Constants.CACHE_SIZE);
 
-        OkHttpClient okHttpClient = new OkHttpClient();
-        okHttpClient.setCache(cache);
-        okHttpClient.setConnectTimeout(10, TimeUnit.SECONDS);
 
-        String endpoint = BASE_URL + API_PREFIX;
-        RestAdapter.Builder builder = new RestAdapter.Builder()
-                .setEndpoint(endpoint);
+        OkHttpClient.Builder okHttpBuilder = new OkHttpClient().newBuilder();
+        okHttpBuilder.cache(cache);
+        okHttpBuilder.connectTimeout(10, TimeUnit.SECONDS);
 
         if (Utility.isDebug()) {
-            builder.setLogLevel(RestAdapter.LogLevel.FULL);
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            okHttpBuilder.addInterceptor(interceptor);
         }
 
-        builder.setRequestInterceptor(new RequestInterceptor() {
+        okHttpBuilder.addInterceptor(new Interceptor() {
             @Override
-            public void intercept(RequestFacade request) {
-                request.addHeader("Accept", "application/json");
+            public Response intercept(Chain chain) throws IOException {
+                Request original = chain.request();
+                Request.Builder requestBuilder = original.newBuilder();
 
-                request.addHeader("Cache-Control", "public, max-age=" + 600);
+                requestBuilder.addHeader("Accept", "application/json");
+                requestBuilder.addHeader("Cache-Control", "public, max-age=" + 600);
+
+                Request request = requestBuilder.build();
+                return chain.proceed(request);
             }
         });
 
@@ -105,7 +117,7 @@ public class RestClientV1 {
         // from the threadpool instead of main thread. Retrofit calls the callback
         // on main thread by default
         ExecutorService backgroundExecutor = Executors.newCachedThreadPool();
-        builder.setExecutors(backgroundExecutor, backgroundExecutor);
+        okHttpBuilder.dispatcher(new Dispatcher(backgroundExecutor));
 
         Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss z")
                 .setExclusionStrategies(new ExclusionStrategy() {
@@ -124,19 +136,25 @@ public class RestClientV1 {
                 .registerTypeAdapter(boolean.class, booleanAsIntAdapter)
                 .registerTypeAdapter(Boolean.class, booleanAsIntAdapter)
                 .create();
-        builder.setConverter(new GsonConverter(gson));
 
-        builder.setClient(new OkClient(okHttpClient));
 
-        RestAdapter adapter = builder.build();
-        mApiService = adapter.create(ApiServiceV1.class);
+
+        OkHttpClient okHttpClient = okHttpBuilder.build();
+        String endpoint = BASE_URL + API_PREFIX;
+
+        Retrofit.Builder retrofitBuilder = new Retrofit.Builder();
+        retrofitBuilder.baseUrl(endpoint);
+        retrofitBuilder.client(okHttpClient);
+        retrofitBuilder.addConverterFactory(GsonConverterFactory.create(gson));
+        Retrofit retrofit=retrofitBuilder.build();
+
+        mApiService = retrofit.create(ApiServiceV1.class);
     }
 
     public static synchronized RestClientV1 getInstance() {
         if (sInstance == null) {
             sInstance = new RestClientV1();
         }
-
         return sInstance;
     }
 

@@ -28,12 +28,13 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.jakewharton:butterknife:8.8.1'
 
-    // if Java use this. If using Kotlin do NOT use this.
     annotationProcessor 'com.github.Raizlabs.DBFlow:dbflow-processor:4.1.1'
 
     compile 'com.github.Raizlabs.DBFlow:dbflow-core:4.1.1'
     compile 'com.github.Raizlabs.DBFlow:dbflow:4.1.1'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.9.0'
     compile 'org.greenrobot:eventbus:3.0.0'
     compile 'frankiesardo:icepick:3.2.0'
     provided 'frankiesardo:icepick-processor:3.2.0'
