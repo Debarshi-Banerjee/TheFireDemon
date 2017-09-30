@@ -26,6 +26,7 @@ import android.widget.RelativeLayout;
 
 import com.example.debarshibanerjee.projectfiredemon.App;
 import com.example.debarshibanerjee.projectfiredemon.R;
+import com.example.debarshibanerjee.projectfiredemon.events.BaseEvent;
 
 /**
  * Created by debarshibanerjee on 28/09/17.
@@ -250,25 +251,25 @@ public class Utility {
         return dialog;
     }
 
-    /**
-     * Shows custom snackbar alert on failure to make calls
-     *
-     * @param view     view to stick to
-     * @param msgResId the resource id for the shown message
-     */
-    public static void showSnackBar(View view, int msgResId) {
-        final Snackbar snackbar = Snackbar.make(view,
-                msgResId,
-                Snackbar.LENGTH_INDEFINITE);
-
-        snackbar.setAction(R.string.close_snack_bar, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                snackbar.dismiss();
-            }
-        });
-        snackbar.show();
-    }
+//    /**
+//     * Shows custom snackbar alert on failure to make calls
+//     *
+//     * @param view     view to stick to
+//     * @param msgResId the resource id for the shown message
+//     */
+//    public static void showSnackBar(View view, int msgResId) {
+//        final Snackbar snackbar = Snackbar.make(view,
+//                msgResId,
+//                Snackbar.LENGTH_INDEFINITE);
+//
+//        snackbar.setAction(R.string.close_snack_bar, new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                snackbar.dismiss();
+//            }
+//        });
+//        snackbar.show();
+//    }
 
     /**
      * Calls the system service to check if we have Internet access
@@ -517,32 +518,14 @@ public class Utility {
      */
     public static boolean handleInternetUnavailabilityError(BaseEvent event, Context context) {
         if (event.isInternetUnavailable()) {
-            Utility.showAlertDialog(R.string.network_error_title,
-                    R.string.network_error_details,
-                    context, R.string.dialog_ok, null);
-
+//            Utility.showAlertDialog(R.string.network_error_title,
+//                    R.string.network_error_details,
+//                    context, R.string.dialog_ok, null);
             return true;
         }
         return false;
     }
 
-    /**
-     * Gets the distance in metres between that two passed in latlngs
-     *
-     * @param point1 First point
-     * @param point2 Second point
-     * @return Distance in Metres
-     */
-    public static float getDistanceBetween(LatLng point1, LatLng point2) {
-        if (point1 == null || point2 == null) {
-            return Float.MAX_VALUE;
-        }
-
-        float[] results = new float[3];
-        Location.distanceBetween(point1.latitude, point1.longitude, point2.latitude, point2.longitude, results);
-
-        return results[0];
-    }
 
 
     /**
@@ -578,19 +561,6 @@ public class Utility {
         return shareIntent;
     }
 
-    /**
-     * Checks whether the error is a retriable error
-     *
-     * @param error The retrofit error
-     * @return True if error can be retried
-     */
-    public static boolean isRetriableError(RetrofitError error) {
-        // TODO: Check for HTTP error as well
-        return error.getKind() == RetrofitError.Kind.NETWORK
-                || error.getKind() == RetrofitError.Kind.CONVERSION
-                || error.getKind() == RetrofitError.Kind.UNEXPECTED;
-
-    }
 
 
     private static int getIntegerPreference(int stringResId) {

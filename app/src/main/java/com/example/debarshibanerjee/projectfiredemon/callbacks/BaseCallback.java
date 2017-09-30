@@ -34,50 +34,52 @@ public abstract class BaseCallback<T> implements Callback<T> {
 
     @Override
     public void onResponse(Call<T> call, Response<T> response) {
-        if(response.isSuccessful()){
+        if (!response.isSuccessful()) {
+            try {
+                BaseEvent event = mEvent.getDeclaredConstructor(Response.class)
+                        .newInstance(response);
 
+                // We will handle all common errors here that are relevant to all retrofit calls
+
+                // If the error was 404 send the user to login page
+                // Clear previous auth token
+                if (event.isHttpError()) {
+                } else if (event.isNetworkError() && Utility.isNetworkUnavailable()) {
+                    // retry maybe??
+                }
+                postEvent(event);
+            } catch (InstantiationException e) {
+                Log.e(LOG_TAG, e.toString());
+            } catch (IllegalAccessException e) {
+                Log.e(LOG_TAG, e.toString());
+            } catch (InvocationTargetException e) {
+                Log.e(LOG_TAG, e.toString());
+            } catch (NoSuchMethodException e) {
+                Log.e(LOG_TAG, e.toString());
+            }
         }else{
-         switch (response.code()){
-
-         }
+        onSuccess(call,response,response.body());
         }
     }
 
+    protected abstract void onSuccess(Call<T> call, Response<T> response,T json);
+
     @Override
     public void onFailure(Call<T> call, Throwable t) {
-
+        try {
+            BaseEvent event = mEvent.getDeclaredConstructor(BaseEvent.ErrorType.class)
+                    .newInstance(BaseEvent.ErrorType.NETWORK_ERROR);
+            postEvent(event);
+        } catch (InstantiationException e) {
+            Log.e(LOG_TAG, e.toString());
+        } catch (IllegalAccessException e) {
+            Log.e(LOG_TAG, e.toString());
+        } catch (InvocationTargetException e) {
+            Log.e(LOG_TAG, e.toString());
+        } catch (NoSuchMethodException e) {
+            Log.e(LOG_TAG, e.toString());
+        }
     }
-//    @Override
-//    public void failure(RetrofitError error) {
-//        if (error.getKind() == RetrofitError.Kind.UNEXPECTED) {
-//            Log.e(LOG_TAG, error.getMessage());
-//            throw error;
-//        }
-//
-//        try {
-//            BaseEvent event = mEvent.getDeclaredConstructor(BaseEvent.ErrorType.class, RetrofitError.class)
-//                    .newInstance(BaseEvent.ErrorType.RETROFIT_ERROR, error);
-//
-//            // We will handle all common errors here that are relevant to all retrofit calls
-//
-//            // If the error was 404 send the user to login page
-//            // Clear previous auth token
-//            if (event.isHttpError()) {
-//            } else if (event.isNetworkError() && Utility.isNetworkUnavailable()) {
-//                // retry maybe??
-//            }
-//
-//            postEvent(event);
-//        } catch (InstantiationException e) {
-//            Log.e(LOG_TAG, e.toString());
-//        } catch (IllegalAccessException e) {
-//            Log.e(LOG_TAG, e.toString());
-//        } catch (InvocationTargetException e) {
-//            Log.e(LOG_TAG, e.toString());
-//        } catch (NoSuchMethodException e) {
-//            Log.e(LOG_TAG, e.toString());
-//        }
-//    }
 
     /**
      * Posts an event with default sticky value

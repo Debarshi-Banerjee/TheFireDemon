@@ -27,7 +27,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.jakewharton:butterknife:8.8.1'
-
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    
     annotationProcessor 'com.github.Raizlabs.DBFlow:dbflow-processor:4.1.1'
 
     compile 'com.github.Raizlabs.DBFlow:dbflow-core:4.1.1'

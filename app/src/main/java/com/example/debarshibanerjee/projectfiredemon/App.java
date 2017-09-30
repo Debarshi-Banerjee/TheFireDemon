@@ -39,7 +39,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         mContext = getApplicationContext();
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);s
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         FlowManager.init(new FlowConfig.Builder(this).openDatabasesOnInit(true).build());
 
     }

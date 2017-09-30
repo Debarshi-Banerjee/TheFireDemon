@@ -3,6 +3,8 @@ package com.example.debarshibanerjee.projectfiredemon.rest;
 
 import com.example.debarshibanerjee.projectfiredemon.App;
 import com.example.debarshibanerjee.projectfiredemon.Constants;
+import com.example.debarshibanerjee.projectfiredemon.callbacks.TestCallback;
+import com.example.debarshibanerjee.projectfiredemon.events.TestEvent;
 import com.example.debarshibanerjee.projectfiredemon.helpers.Utility;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -42,10 +44,7 @@ public class RestClientV1 {
     public static final String IMAGES_PREFIX = "images/";
     public static final String IMAGES_URL = BASE_URL + IMAGES_PREFIX;
 
-    public static final String ERROR_CODE = "errorcode";
-    public static final String ERROR_MESSAGES = "errormessages";
 
-    public static final int ERROR_UNKNOWN = -1;
 
     public static final String ERROR_MEETUP_STATUS = "status";
 
@@ -158,7 +157,7 @@ public class RestClientV1 {
     }
 
     public void getGitHubRepoContributors(String owner, String repo) {
-        mApiService.repoContributors(owner, repo).enqueue();
+        mApiService.repoContributors(owner, repo).enqueue(new TestCallback());
     }
 
 }
