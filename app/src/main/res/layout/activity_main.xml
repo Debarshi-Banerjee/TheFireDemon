@@ -4,8 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.debarshibanerjee.projectfiredemon.MainActivity">
-
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <LinearLayout
+        android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
@@ -22,5 +25,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Test Rest" />
+
+        <Button
+            android:id="@+id/bt_test_database"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Test Database" />
+
+        <Button
+            android:id="@+id/bt_test_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="clear" />
     </LinearLayout>
+</ScrollView>
 </LinearLayout>

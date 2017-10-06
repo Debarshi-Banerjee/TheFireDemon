@@ -22,6 +22,10 @@ public class TestCallback extends BaseCallback<List<Contributor>> {
     protected void onSuccess(Call<List<Contributor>> call, Response<List<Contributor>> response, List<Contributor> json) {
         TestEvent event=new TestEvent(BaseEvent.ErrorType.NO_ERROR);
         event.setContributors(json);
+
+        for(Contributor c:json){
+            c.save();
+        }
         postEvent(event);
     }
 }

@@ -3,14 +3,21 @@ package com.example.debarshibanerjee.projectfiredemon.pojo;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.example.debarshibanerjee.projectfiredemon.data.MyDatabase;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
+
 /**
  * Created by debarshibanerjee on 29/09/17.
  */
-
-public class Contributor implements Parcelable {
-    String login;
-    String html_url;
-    int contributions;
+@Table(database = MyDatabase.class)
+public class Contributor extends BaseModel implements Parcelable {
+    @PrimaryKey
+    @Column String login;
+    @Column String html_url;
+    @Column int contributions;
 
     public String getLogin() {
         return login;
