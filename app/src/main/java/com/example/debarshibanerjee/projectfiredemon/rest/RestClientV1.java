@@ -4,8 +4,8 @@ package com.example.debarshibanerjee.projectfiredemon.rest;
 import com.example.debarshibanerjee.projectfiredemon.App;
 import com.example.debarshibanerjee.projectfiredemon.Constants;
 import com.example.debarshibanerjee.projectfiredemon.callbacks.TestCallback;
-import com.example.debarshibanerjee.projectfiredemon.events.TestEvent;
 import com.example.debarshibanerjee.projectfiredemon.helpers.Utility;
+import com.example.debarshibanerjee.projectfiredemon.pojo.Contributor;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -18,10 +18,17 @@ import com.raizlabs.android.dbflow.structure.ModelAdapter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Cache;
 import okhttp3.Dispatcher;
 import okhttp3.Interceptor;
@@ -30,6 +37,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
@@ -47,8 +55,6 @@ public class RestClientV1 {
 
 
     public static final String ERROR_MEETUP_STATUS = "status";
-
-
     private static final TypeAdapter<Boolean> booleanAsIntAdapter = new TypeAdapter<Boolean>() {
         @Override
         public void write(JsonWriter out, Boolean value) throws IOException {
@@ -77,8 +83,8 @@ public class RestClientV1 {
             }
         }
     };
-
     private static RestClientV1 sInstance;
+    CompositeDisposable mCompositeDisposable = new CompositeDisposable();
     private ApiServiceV1 mApiService;
 
 
@@ -118,6 +124,7 @@ public class RestClientV1 {
         ExecutorService backgroundExecutor = Executors.newCachedThreadPool();
         okHttpBuilder.dispatcher(new Dispatcher(backgroundExecutor));
 
+
         Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss z")
                 .setExclusionStrategies(new ExclusionStrategy() {
                     @Override
@@ -144,6 +151,7 @@ public class RestClientV1 {
         retrofitBuilder.baseUrl(endpoint);
         retrofitBuilder.client(okHttpClient);
         retrofitBuilder.addConverterFactory(GsonConverterFactory.create(gson));
+        retrofitBuilder.addCallAdapterFactory(RxJava2CallAdapterFactory.create());
         Retrofit retrofit = retrofitBuilder.build();
 
         mApiService = retrofit.create(ApiServiceV1.class);
@@ -160,4 +168,21 @@ public class RestClientV1 {
         mApiService.repoContributors(owner, repo).enqueue(new TestCallback());
     }
 
+    public Single<List<Contributor>> getGitHubRepoContributorsRx(String owner, String repo) {
+        return mApiService.repoContributorsRx(owner, repo);
+    }
+
+
+    public void foobar(String owner, String repo, Consumer<List<Contributor>> consumer) {
+        mCompositeDisposable.add(RestClientV1.getInstance().getGitHubRepoContributorsRx("square", "retrofit")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Function<List<Contributor>, List<Contributor>>() {
+                    @Override
+                    public List<Contributor> apply(List<Contributor> contributors) throws Exception {
+                        return contributors;
+                    }
+                })
+                .subscribe(consumer));
+    }
 }
