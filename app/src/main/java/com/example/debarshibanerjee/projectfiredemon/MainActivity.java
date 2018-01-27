@@ -24,8 +24,12 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observer;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+
+import static android.widget.Toast.LENGTH_LONG;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -64,12 +68,36 @@ public class MainActivity extends AppCompatActivity {
         mButtonRx.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RestClientV1.getInstance().foobar("square", "retrofit", new Consumer<List<Contributor>>() {
+
+                RestClientV1.getInstance().foobar("square", "retrofit", new Observer<List<Contributor>>() {
                     @Override
-                    public void accept(List<Contributor> contributors) throws Exception {
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(List<Contributor> contributors) {
                         mSimpleResAdapter.swapData(contributors);
                     }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getApplicationContext(), "this is a basic error text here ", LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
                 });
+
+
+//                RestClientV1.getInstance().singleTest("square", "retrofit", new Consumer<List<Contributor>>() {
+//                    @Override
+//                    public void accept(List<Contributor> contributors) throws Exception {
+//                        mSimpleResAdapter.swapData(contributors);
+//                    }
+//                });
 
             }
         });
@@ -117,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
             List<Contributor> contributors = event.getContributors();
             mSimpleResAdapter.swapData(contributors);
         } else {
-            Toast.makeText(this, String.valueOf(event.getHttpStatus()), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, String.valueOf(event.getHttpStatus()), LENGTH_LONG).show();
         }
 
     }

@@ -4,6 +4,7 @@ import com.example.debarshibanerjee.projectfiredemon.pojo.Contributor;
 
 import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -23,5 +24,12 @@ interface ApiServiceV1 {
     Single<List<Contributor>> repoContributorsRx(
             @Path("owner") String owner,
             @Path("repo") String repo
+    );
+
+
+    @GET("repos/{owner}/{repo}/contributors")
+    Observable<List<Contributor>> repoContribuorsRxObs(
+                @Path("owner") String owner,
+                @Path("repo") String repo
     );
 }

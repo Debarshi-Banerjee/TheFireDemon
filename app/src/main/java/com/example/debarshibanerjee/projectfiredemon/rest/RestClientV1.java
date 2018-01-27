@@ -16,6 +16,9 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import com.raizlabs.android.dbflow.structure.ModelAdapter;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -23,9 +26,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -168,12 +175,22 @@ public class RestClientV1 {
         mApiService.repoContributors(owner, repo).enqueue(new TestCallback());
     }
 
+    public Observable<List<Contributor>> getGitHubRepoContributorRxObs(String owner,String repo){
+        return mApiService.repoContribuorsRxObs(owner,repo);
+    }
+
     public Single<List<Contributor>> getGitHubRepoContributorsRx(String owner, String repo) {
         return mApiService.repoContributorsRx(owner, repo);
     }
 
+    public void foobar(String owner,String repo,Observer<List<Contributor>> observer){
+        getGitHubRepoContributorRxObs(owner,repo)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
 
-    public void foobar(String owner, String repo, Consumer<List<Contributor>> consumer) {
+    public void  singleTest(String owner, String repo, Consumer<List<Contributor>> consumer) {
         mCompositeDisposable.add(RestClientV1.getInstance().getGitHubRepoContributorsRx("square", "retrofit")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -182,6 +199,7 @@ public class RestClientV1 {
                     public List<Contributor> apply(List<Contributor> contributors) throws Exception {
                         return contributors;
                     }
+
                 })
                 .subscribe(consumer));
     }
